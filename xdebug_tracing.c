@@ -112,12 +112,12 @@ char* xdebug_return_trace_stack_retval(function_stack_entry* i, zval* retval TSR
 	xdebug_str str = {0, 0, NULL};
 	char      *tmp_value;
 
-	if (XG(trace_format) != 0) {
+	if (XG(trace_format) != 0 && XG(trace_format) != 1 ) {
 		return xdstrdup("");
 	}
 
-	xdebug_return_trace_stack_common(&str, i TSRMLS_CC);
-
+	//xdebug_return_trace_stack_common(&str, i TSRMLS_CC);
+         
 	tmp_value = xdebug_get_zval_value(retval, 0, NULL);
 	if (tmp_value) {
 		xdebug_str_add(&str, tmp_value, 1);
@@ -237,6 +237,7 @@ static char* return_trace_stack_frame_begin_normal(function_stack_entry* i TSRML
 static char* return_trace_stack_frame_computerized(function_stack_entry* i, int fnr, int whence TSRMLS_DC)
 {
 	char *tmp_name;
+        zval *tmp_retval;
 	xdebug_str str = {0, 0, NULL};
 
 	xdebug_str_add(&str, xdebug_sprintf("%d\t", i->level), 1);
@@ -311,12 +312,26 @@ static char* return_trace_stack_frame_computerized(function_stack_entry* i, int 
 
 	} else if (whence == 1) { /* end */
 		xdebug_str_add(&str, "1\t", 0);
-		xdebug_str_add(&str, xdebug_sprintf("%f\t", xdebug_get_utime() - XG(start_time)), 1);
+		xdebug_str_add(&str, xdebug_sprintf("%f\t", xdebug_get_utime() - XG(start_time)), 1);                
 #if HAVE_PHP_MEMORY_USAGE
-		xdebug_str_add(&str, xdebug_sprintf("%lu\n", XG_MEMORY_USAGE()), 1);
+		xdebug_str_add(&str, xdebug_sprintf("%lu\t", XG_MEMORY_USAGE()), 1);
 #else
-		xdebug_str_add(&str, "\n", 0);
-#endif
+		
+#endif          
+                /*
+                char *tmp_value;
+                //function_stack_entry *tmp_stack;                
+                //*tmp_stack = *i;                
+                
+                ALLOC_INIT_ZVAL(tmp_retval);
+                *tmp_retval = *i->return_value;
+                INIT_PZVAL(tmp_retval);
+                //tmp_value = xdebug_return_trace_stack_retval(tmp_stack, tmp_retval TSRMLS_CC);
+                xdebug_str_add(&str, xdebug_sprintf("%s\t", tmp_value), 1);*/
+               // xdebug_str_add(&str, "\n", 0);
+                
+                //zval_ptr_dtor(&tmp_retval);
+                //zval_ptr_dtor(&tmp_stack);
 	}
 
 	return str.d;
